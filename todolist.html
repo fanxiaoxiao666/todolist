@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body{font-family: "微软雅黑";font-size: 14px;}
+        input{font-size: 14px;}
+        body,ul,div,html{padding: 0;margin: 0;}
+        .hidden{display: none;}
+        .main{width: 800px;margin: 0 auto;}
+        li{list-style-type: none;line-height: 40px;position: relative;border: 1px solid transparent;padding: 0 20px;}
+        li .type-span{display: block;width: 10px;height: 10px;background: #ccc;margin: 14px 10px 0 0 ;float: left;}
+        li .close{position: absolute;color: #f00;font-size: 20px;line-height: 40px;height: 40px;right: 20px;cursor: pointer;display: none;top: 0;}
+        li:hover{border: 1px solid #09f;}
+        li:hover .close{display: block;}
+        li div{display: block;}
+        li.eidting div{display: none;}
+        li .text-keyword{height: 40px;padding-left: 10px;box-sizing: border-box;margin-left: 10px;width: 80%;display: none;}
+        .text-keyword{box-sizing: border-box;width: 100%;height: 40px;padding-left: 10px;outline: none;}
+        li .active{background: blue}
+        li .text2{height: 40px;padding-left: 10px;box-sizing: border-box;margin-left: 10px;width: 80%;display: none;}
+        li.eidting .text2{display: block;}
+    </style>
+</head>
+<body>
+<div id="app" class="main">
+    <h2>小目标列表</h2>
+    <div class="list">
+        <h3>添加小目标</h3>
+        <input type="text" class="text-keyword" placeholder="输入小目标后，按回车确认"
+               v-model="addText" v-on:keyup.13="addM">
+        <p>共有{{list.length}}个目标<span v-if="noend!=list.length">{{noend}}个目标已完成</span><span v-if="noend!=list.length">{{list.length-noend}}个目标还未完成</span><span v-if="noend==list.length">全部完成</span></p>
+        <p>
+            <input type="radio" name="chooseType" checked  v-on:click="chooselist(1)" ><label>所有目标</label>
+            <input type="radio" name="chooseType"  v-on:click="chooselist(2)"  ><label>已完成目标</label>
+            <input type="radio" name="chooseType" v-on:click="chooselist(3)" ><label>未完成目标</label>
+        </p>
+    </div>
+    <ul>
+        <li class="li1" v-for="(value,index) of newlist" :class="{'eidting':curIndex===index}">
+            <div  >
+                <span  v-on:click="changeType(index)" v-bind:class="['type-span',value.select?'active':'']"></span>
+                <span @dblclick="curIndex=index">{{value.title}}</span>
+                <span class="close" v-on:click="removeM(index)">X</span>
+            </div>
+            <input type="text" class="text2" v-model="value.title" v-on:keyup.enter="edit" @blur="edit" @keyup.esc="del(value)"
+                   @focus="editbefore(value)" v-focus>
+        </li>
+
+
+        <!--  <li class="li1">
+              <div>
+                  <span class="type-span"></span>
+                  <span>css3</span>
+                  <span class="close">X</span>
+              </div>
+          </li>-->
+    </ul>
+</div>
+</body>
+<script src="js/vue.min.js"></script>
+<script type="text/javascript">
+    new Vue({
+        el: "#app",
+        data: {
+            list:[
+                {title:"html5",select:false},{title:"css3",select:false},{title:"js",select:false},{title:"vue.js",select:false}
+            ],
+            addText:"",
+            newlist:[],
+            /* 'type-span':'type-span',*/
+            /* active:'active',*/
+            curtype:0,
+            curIndex:'',
+            beforename:""
+        },
+        computed:{
+            noend:function()
+            {
+                return this.list.filter(function(val){return val.select}).length
+            }
+        },
+        methods:{
+            addM:function()
+            {
+                if(this.addText!="") {
+                    this.list.push({title:this.addText,select:false})
+                    this.addText = "";
+                    this.chooselist(this.curtype)
+                }
+            },
+            changeType(index){
+                this.list[index].select=!this.list[index].select;
+                //更新数据
+                this.chooseList(this.curtype);
+            },
+            removeM:function(index)
+            {
+                this.list.splice(index,1);
+               /* this.chooselist(this.curtype)*/
+            },
+            chooselist:function(type)
+            {
+                this.curtype=type
+                switch(type){
+                    case 1:this.newlist=this.list;break;
+                    case 2:this.newlist=this.list.filter(function(val){return val.select});break
+                    case 3:this.newlist=this.list.filter(function(val){return !val.select});break
+                }
+            },
+            editbefore:
+                    function(value)
+                    {
+                        this. beforename=value.title
+                    },
+            edit:function()
+            {
+                this.curIndex=''
+            },
+            del:function(value)
+            {
+                this.curIndex='';
+                value.title=this.beforename
+            }
+        },
+        mounted(){
+            this.newlist=this.list
+        },
+        directives:{
+            "focus":{
+                update(el){
+                    el.focus();
+                }
+            }
+        }
+    });
+</script>
+</html>
